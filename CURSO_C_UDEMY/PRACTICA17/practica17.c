@@ -1,27 +1,22 @@
 #include <stdio.h>
-#define N 5
+#include <stdlib.h>
+#include <string.h>
 
-int main(){
+int main ()
 
-    float lista_numeros[N];
-    float sumatorio = 0;
-    float media = 0;
-    float *pointer;
+{
+int n=0 , ch=0 , ln;
+char nombre[30];
 
-    for(int i = 0; i < N; i++){
-        printf("\nIntroduzca un número real para la posición %d del vector: ", (i + 1));
-        scanf("%f", &lista_numeros[i]);
-    }
-    
-    pointer = &lista_numeros[0];
+printf("Hola, introduzca un numero: ");
+scanf("%d", &n);
+printf("Introduzca un nombre: ");
+while ((ch = getchar()) != '\n' && ch != EOF);
+fgets(nombre , sizeof nombre , stdin);
+ln = strlen (nombre);
+if (nombre[ln-1]=='\n') nombre[ln-1]='\0';
 
-    for(int i = 0; i < N; i++){
-        sumatorio = sumatorio + *(pointer + i);
-    }
+printf("El nombre introducido es %s y el numero es %d.", nombre , n);
 
-    media = sumatorio / N;
-
-    printf("\nLa media de los %d números introducidos es: %.2f", N, media);
-
-    return 0;
+return 0;
 }
