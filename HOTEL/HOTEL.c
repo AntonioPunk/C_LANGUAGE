@@ -5,9 +5,7 @@
 int main()
 
 {
-	
 while (1)
-
 {
 
 int h=0 , n=1 , i=0;
@@ -44,7 +42,7 @@ for(n=0 ; n<h ; n++)
 {
 	printf("HABITACION: ");
 	printf("\t%.0f  ", planta1[n][0]);
-	printf("%.2f  ", planta1[n][1]);
+	printf("\t%.2f  ", planta1[n][1]);
 	printf("%.2f  ", planta1[n][2]);
 	printf("%.2f  ", planta1[n][3]);
 	printf("\n");
@@ -73,14 +71,11 @@ for (n=0 ; n<h ; n++)
 }
 
 // mostramos por pantalla el promedio de las tres temporadas
-printf("\n\n\nLa media del precio en temporada BAJA es: %.2f", baja/h);
-printf("\nLa media del precio en temporada MEDIA es: %.2f", media/h);
-printf("\nLa media del precio en temporada ALTA es: %.2f\n\n\n\n", alta/h);
-
-
+printf("\n\n\nLa media del precio en temporada BAJA  es:\t%.2f", baja/h);
+printf("\nLa media del precio en temporada MEDIA es:\t%.2f", media/h);
+printf("\nLa media del precio en temporada ALTA  es:\t%.2f", alta/h);
 
 }
-
 
 return 0;
 }
