@@ -1,3 +1,5 @@
+# MAKEFILE PARA C
+
 # Las fuentes van a ser: *.c
 # Utilizamos 'wildcard' que es el equivalente en bash del *
 SOURCES := $(wildcard *.c)
