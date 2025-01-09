@@ -8,7 +8,7 @@ int main()
 {
 	
 	char dia[10];
-	 
+	
 	printf ("Introduzca el dia de la semana en que estas: ");
 	scanf ("%s" , dia);
 	printf("\n%s!!!" , dia);
