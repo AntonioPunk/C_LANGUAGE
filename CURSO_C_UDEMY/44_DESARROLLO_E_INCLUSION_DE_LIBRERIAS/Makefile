@@ -5,7 +5,7 @@
 SOURCES := $(wildcard *.c)
 OBJECTS := $(subst .c,.o,$(SOURCES))
 
-ejecutable: $(OBJECTS)
+ejecutable.exe: $(OBJECTS)
 	gcc -o $@ $^		
 
 %.o: %.c
