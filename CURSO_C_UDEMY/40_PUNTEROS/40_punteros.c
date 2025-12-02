@@ -19,7 +19,7 @@ int main(){
     char *puntero_cadena = cadena;
     // Recorremos el array usando el puntero:
     for(int i = 0; i < 30; i++){
-        printf("%c ", *(puntero_cadena + i));
+        printf("%c", *(puntero_cadena + i));
     }
 
 // Puntero a vector de enteros:
