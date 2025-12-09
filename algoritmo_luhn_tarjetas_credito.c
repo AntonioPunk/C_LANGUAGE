@@ -32,9 +32,9 @@ int main() {
             valido = false;
         }
 
-        for(size_t i = 0; i < len && valido; i++){
+        for(i = 0; i < len && valido; i++){
             if(texto_tarjeta[i] < '0' || texto_tarjeta[i] > '9'){
-                printf("ERROR: Los caracteres han de ser numéricos.");
+                printf("ERROR: Los caracteres han de ser numéricos.\n");
                 valido = false;
                 break;
             }
