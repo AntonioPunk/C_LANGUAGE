@@ -5,7 +5,7 @@
 int main() {
 
     char texto_tarjeta[20];
-    int numero_tarjeta[16], i, decenas, unidades, sumatorio_array = 0;
+    int numero_tarjeta[16], i, unidades, sumatorio_array = 0;
     bool valido;
     size_t len;
 
