@@ -5,7 +5,7 @@
 int main() {
 
     char texto_tarjeta[20];
-    int numero_tarjeta[16], i;
+    int numero_tarjeta[16], i, decenas, unidades, sumatorio_array = 0;
     bool valido;
     size_t len;
 
@@ -72,5 +72,32 @@ int main() {
     }
     printf("\n");
 
+    // Comenzamos a aplicar el algoritmo de Luhn al array:
+    // Primero: multiplamos por 2 las posiciones pares del array,
+    // si el resultado es superior a 9 adjudicamos a esa posición del array
+    // la suma de la unidad y la decena (nótese que la decena nunca va a superar 10, por tanto
+    // nos basta con sumar siempre 1).
+    for (i = 0; i <= 14; i += 2){
+        numero_tarjeta[i] = numero_tarjeta[i] * 2;
+        if (numero_tarjeta[i] > 9){
+            unidades = numero_tarjeta[i] % 10;
+            numero_tarjeta[i] = unidades + 1;
+        }
+    }
+
+    // Hacemos el sumatorio de todas las posiciones del array ya modidificado.
+    for (i = 0; i < 16; i++){
+        sumatorio_array += numero_tarjeta[i];
+    }
+
+    // Verificamos la condición para que se cumpla el algoritmo: el sumatorio
+    // ha de ser múltiplo de 10.
+    if (sumatorio_array % 10 == 0){
+        printf("\nEl número de tarjeta es correcto.\n");
+    }
+    else {
+        printf("\nERROR: El número introducido no se corresponde a una tarjeta válida.\n\n");
+    }
+    
     return 0;
 }
