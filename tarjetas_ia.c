@@ -1,212 +1,165 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 
-#define LONGITUD_TARJETA 16
-#define TAMANO_BUFFER    20
+enum {
+    MAX_LONGITUD_TARJETA = 19,
+    TAMANO_BUFFER = MAX_LONGITUD_TARJETA + 2, /* 19 digitos + '\n' + '\0' */
+};
 
-/**
- * es_numerico - Verifica si todos los caracteres de una cadena son dígitos
- * @cadena: Puntero a la cadena a verificar
- * @longitud: Número de caracteres a analizar
- * 
- * Retorna: true si todos son dígitos numéricos, false en caso contrario
- * 
- * Comprobación carácter a carácter buscando valores fuera del rango '0'-'9'
- */
-bool es_numerico(const char *cadena, size_t longitud) {
-    for (size_t i = 0; i < longitud; i++) {
-        if (cadena[i] < '0' || cadena[i] > '9') {
+static bool es_longitud_valida(size_t longitud) {
+    return longitud == 13 || longitud == 15 || longitud == 16 || longitud == 19;
+}
+
+static void limpiar_stdin(void) {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {
+        ;
+    }
+}
+
+static bool leer_linea(char *buffer, size_t tamano) {
+    if (fgets(buffer, tamano, stdin) == NULL) {
+        return false;
+    }
+
+    if (strchr(buffer, '\n') == NULL) {
+        limpiar_stdin();
+    }
+
+    size_t longitud = strlen(buffer);
+    if (longitud > 0 && buffer[longitud - 1] == '\n') {
+        buffer[longitud - 1] = '\0';
+    }
+
+    return true;
+}
+
+static bool es_numerico(const char *cadena, size_t longitud) {
+    for (size_t i = 0; i < longitud; ++i) {
+        if (!isdigit((unsigned char)cadena[i])) {
             return false;
         }
     }
     return true;
 }
 
-/**
- * leer_tarjeta - Solicita y valida el número de tarjeta del usuario
- * @buffer: Array donde se almacenará la entrada
- * @tamano: Tamaño máximo del buffer (incluyendo terminador nulo)
- * 
- * Retorna: true si la entrada es válida, false en caso contrario
- * 
- * Proceso:
- * 1. Solicita entrada mediante fgets (previene buffer overflow)
- * 2. Limpia stdin si la entrada excede el buffer
- * 3. Normaliza eliminando salto de línea
- * 4. Valida longitud exacta de 16 caracteres
- * 5. Verifica que sean únicamente dígitos
- */
-bool leer_tarjeta(char *buffer, size_t tamano) {
-    size_t len;
-    bool es_valido = true;
+static bool validar_numero_tarjeta(const char *numero) {
+    size_t longitud = strlen(numero);
 
-    printf("Introduce el numero de tu tarjeta de credito: ");
-    fgets(buffer, tamano, stdin);
-
-    /**
-     * Si fgets no encuentra '\n', significa que la entrada
-     * excedió el tamaño del buffer. Limpiamos stdin para evitar
-     * que los caracteres restantes interfieran en próximas lecturas.
-     */
-    if (strchr(buffer, '\n') == NULL) {
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF);
+    if (!es_longitud_valida(longitud)) {
+        puts("ERROR: El numero de tarjeta debe tener 13, 15, 16 o 19 digitos.");
+        return false;
     }
 
-    len = strlen(buffer);
-
-    /**
-     * Normalización: eliminamos el salto de línea leftover de fgets
-     * y ajustamos la longitud real de la cadena.
-     */
-    if (len > 0 && buffer[len - 1] == '\n') {
-        buffer[len - 1] = '\0';
-        len--;
+    if (!es_numerico(numero, longitud)) {
+        puts("ERROR: El numero de tarjeta solo puede contener digitos.");
+        return false;
     }
 
-    /**
-     * Validación de longitud: el número de tarjeta debe ser
-     * exactamente 16 dígitos.
-     */
-    if (len != LONGITUD_TARJETA) {
-        printf("ERROR: El numero introducido debe tener %d caracteres.\n", LONGITUD_TARJETA);
-        es_valido = false;
-    }
-
-    /**
-     * Validación de contenido: verificamos que todos los caracteres
-     * sean dígitos numéricos.
-     */
-    if (es_valido && !es_numerico(buffer, len)) {
-        printf("ERROR: Los caracteres han de ser numericos.\n");
-        es_valido = false;
-    }
-
-    return es_valido;
+    return true;
 }
 
-/**
- * convertir_a_digitos - Convierte caracteres ASCII a valores enteros
- * @origen: Cadena con caracteres numéricos ('0'-'9')
- * @destino: Array de enteros donde se almacenan los dígitos
- * @cantidad: Número de caracteres a convertir
- * 
- * Conversión mediante resta del código ASCII de '0' (48).
- * Ejemplo: '5' - '0' = 53 - 48 = 5
- */
-void convertir_a_digitos(const char *origen, int *destino, size_t cantidad) {
-    for (size_t i = 0; i < cantidad; i++) {
+static void convertir_a_digitos(const char *origen, int *destino, size_t cantidad) {
+    for (size_t i = 0; i < cantidad; ++i) {
         destino[i] = origen[i] - '0';
     }
 }
 
-/**
- * mostrar_tarjeta - Imprime el número de tarjeta formateado
- * @digitos: Array de dígitos a mostrar
- * @cantidad: Total de dígitos
- * 
- * Formato de salida: XXXX XXXX XXXX XXXX (grupos de 4)
- */
-void mostrar_tarjeta(const int *digitos, size_t cantidad) {
-    printf("\nEl numero de tarjeta es: ");
-    for (size_t i = 0; i < cantidad; i++) {
-        printf("%d", digitos[i]);
-        if (i == 3 || i == 7 || i == 11) {
-            printf(" ");
+static void mostrar_tarjeta(const char *numero, size_t cantidad) {
+    puts("\nEl numero de tarjeta es:");
+    for (size_t i = 0; i < cantidad; ++i) {
+        putchar(numero[i]);
+        if ((i + 1) % 4 == 0 && i + 1 < cantidad) {
+            putchar(' ');
         }
     }
-    printf("\n");
+    putchar('\n');
 }
 
-/**
- * aplicar_luhn - Aplica el algoritmo de Luhn al array de dígitos
- * @digitos: Array de dígitos a modificar (in-place)
- * @cantidad: Total de dígitos
- * 
- * Algoritmo:
- * 1. Identificar posiciones pares (0, 2, 4, ..., n-2)
- * 2. Duplicar el valor de cada posición par
- * 3. Si el resultado excede 9, restar 9 (equivalente a sumar dígitos)
- *    Ejemplo: 7*2=14 -> 14-9=5 -> 1+4=5 (ambos métodos son equivalentes)
- */
-void aplicar_luhn(int *digitos, size_t cantidad) {
-    for (size_t i = 0; i <= cantidad - 2; i += 2) {
-        digitos[i] *= 2;
-        if (digitos[i] > 9) {
-            digitos[i] -= 9;
+static const char *tipo_tarjeta(const char *numero) {
+    size_t longitud = strlen(numero);
+    int pref2 = (numero[0] - '0') * 10 + (numero[1] - '0');
+    int pref3 = pref2 * 10 + (numero[2] - '0');
+    int pref4 = pref3 * 10 + (numero[3] - '0');
+    int pref6 = pref4 * 100 + (numero[4] - '0') * 10 + (numero[5] - '0');
+
+    if (numero[0] == '4' && (longitud == 13 || longitud == 16 || longitud == 19)) {
+        return "Visa";
+    }
+
+    if (longitud == 15 && (pref2 == 34 || pref2 == 37)) {
+        return "American Express";
+    }
+
+    if (longitud == 16 && ((pref2 >= 51 && pref2 <= 55) || (pref4 >= 2221 && pref4 <= 2720))) {
+        return "MasterCard";
+    }
+
+    if ((longitud == 16 || longitud == 19) &&
+        (pref4 == 6011 || pref2 == 65 ||
+        (pref3 >= 644 && pref3 <= 649) ||
+        (pref6 >= 622126 && pref6 <= 622925))) {
+        return "Discover";
+    }
+
+    if ((longitud == 16 || longitud == 19) && (pref4 >= 3528 && pref4 <= 3589)) {
+        return "JCB";
+    }
+
+    if (longitud == 14 && (pref2 == 36 || pref2 == 38 || pref2 == 39 ||
+        (pref3 >= 300 && pref3 <= 305))) {
+        return "Diners Club";
+    }
+
+    return "Desconocido";
+}
+
+static bool validar_luhn(const int *digitos, size_t cantidad) {
+    int suma = 0;
+    bool doble = false;
+
+    for (size_t i = cantidad; i-- > 0;) {
+        int valor = digitos[i];
+        if (doble) {
+            valor *= 2;
+            if (valor > 9) {
+                valor -= 9;
+            }
         }
-    }
-}
-
-/**
- * verificar_tarjeta - Verifica la validez mediante algoritmo de Luhn
- * @digitos: Array de dígitos a verificar
- * @cantidad: Total de dígitos
- * 
- * Retorna: true si el número es válido según Luhn, false en caso contrario
- * 
- * Criterio: la suma total debe ser múltiplo de 10 (suma % 10 == 0)
- */
-bool verificar_tarjeta(const int *digitos, size_t cantidad) {
-    int suma_total = 0;
-
-    for (size_t i = 0; i < cantidad; i++) {
-        suma_total += digitos[i];
+        suma += valor;
+        doble = !doble;
     }
 
-    return (suma_total % 10 == 0);
+    return (suma % 10) == 0;
 }
 
-/**
- * main - Punto de entrada del programa
- * 
- * Flujo de ejecución:
- * 1. Declarar variables y buffers necesarios
- * 2. Solicitar número de tarjeta validado
- * 3. Convertir string a array de dígitos
- * 4. Mostrar número formateado
- * 5. Aplicar algoritmo de Luhn
- * 6. Verificar y mostrar resultado
- */
-int main() {
-    char numero_str[TAMANO_BUFFER];
-    int digitos[LONGITUD_TARJETA];
+int main(void) {
+    char numero[TAMANO_BUFFER];
+    int digitos[MAX_LONGITUD_TARJETA];
 
-    /**
-     * Bucle de validación: repetimos hasta obtener una entrada válida.
-     * Si leer_tarjeta() retorna false, continuamos pedindo datos.
-     */
-    do {
-        if (!leer_tarjeta(numero_str, TAMANO_BUFFER)) {
+    while (true) {
+        printf("Introduce el numero de tu tarjeta de credito: ");
+        if (!leer_linea(numero, sizeof numero)) {
+            puts("ERROR: Entrada invalida.");
             continue;
         }
-        break;
-    } while (true);
 
-    /**
-     * Conversión: transformamos el string en array de enteros.
-     */
-    convertir_a_digitos(numero_str, digitos, LONGITUD_TARJETA);
+        if (validar_numero_tarjeta(numero)) {
+            break;
+        }
+    }
 
-    /**
-     * Presentación: imprimimos el número formateado en grupos de 4.
-     */
-    mostrar_tarjeta(digitos, LONGITUD_TARJETA);
+    size_t longitud = strlen(numero);
+    convertir_a_digitos(numero, digitos, longitud);
+    mostrar_tarjeta(numero, longitud);
+    printf("Tipo de tarjeta: %s\n", tipo_tarjeta(numero));
 
-    /**
-     * Procesamiento: aplicamos el algoritmo de Luhn.
-     * Modifica el array original multiplicando posiciones pares.
-     */
-    aplicar_luhn(digitos, LONGITUD_TARJETA);
-
-    /**
-     * Verificación final: validamos según el algoritmo.
-     */
-    if (verificar_tarjeta(digitos, LONGITUD_TARJETA)) {
-        printf("\nEl numero de tarjeta es correcto.\n");
+    if (validar_luhn(digitos, longitud)) {
+        puts("\nEl numero de tarjeta es correcto.");
     } else {
-        printf("\nERROR: El numero introducido no se corresponde a una tarjeta valida.\n");
+        puts("\nERROR: El numero introducido no se corresponde a una tarjeta valida.");
     }
 
     return 0;
