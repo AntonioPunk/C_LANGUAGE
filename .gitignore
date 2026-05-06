@@ -1,0 +1,42 @@
+# Archivos ejecutables
+*.exe
+*.out
+
+# Archivos objeto de compilación
+*.o
+*.obj
+
+# Archivos de biblioteca
+*.a
+*.lib
+*.dll
+
+# Directorios de build y binarios
+bin/
+build/
+output/
+obj/
+dist/
+
+# Binarios compilados del proyecto (ejecutables sin extensión)
+algoritmo_luhn
+algoritmo_luhn_tarjetas_credito
+tarjetas_ia
+40_punteros
+42_funciones
+
+# Archivos de IDE
+*.dev
+*.layout
+*.cbp
+*.depend
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de depuración
+*.dSYM/
+*.su
+*.gch
+*.pch
