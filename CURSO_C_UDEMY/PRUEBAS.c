@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 // Uso de typedef enum para crear nuevos tipos de variables partiendo de las primitivas y enumerar datos.
 // Nótese que typedef enum asigna un entero {0,1,2,3 ...} a cada valor posible enumerado.
@@ -13,7 +12,7 @@ int bucle = 0;
 typedef enum {lunes , marte , miercoles , jueves , viernes , sabado , domingo} semana;
 
 //while (bucle == 0) 					//Para hacer un bucle infinito
-for (bucle == 0 ; bucle<5 ; bucle++)	//Hace un bucle de 5 veces,
+for (bucle = 0 ; bucle < 5 ; bucle++)	//Hace un bucle de 5 veces,
 {
 
 semana dia;
