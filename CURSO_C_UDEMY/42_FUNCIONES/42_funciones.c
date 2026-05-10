@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 // PASO DE ARGUMENTOS POR VALOR EN FUNCIONES:
 // NO podemos alterar el valor de los parámetros dentro de la función.
