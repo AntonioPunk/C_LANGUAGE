@@ -23,14 +23,14 @@ dia = lunes;
 
 printf("\n\nIntroduzca el dia de la semana del 1 al 7 siendo el lunes 1: ");
 scanf("%d", &dia);
-dia = --dia;	
+dia = dia - 1;	
 //printf ("%d\n\n", dia);	
 		
-while (dia < 0 , dia > 6)
+while (dia < 0 || dia > 6)
 	{
 	printf ("\n\nNumero fuera de parametro, introduzca un nuevo numero comprendido entre 1 y 7: ");
 	scanf ("%d", &dia);
-	dia = --dia;
+	dia = dia - 1;
 	}
 
 
