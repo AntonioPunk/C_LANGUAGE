@@ -142,7 +142,7 @@ void Logic() {
         fruitY = rand() % HEIGHT;
 
         nTail++;
-        usleep((useconds_t)((1 - (nTail / 5.0)) * 100000)); // Aumenta la velocidad con la longitud de la serpiente
+        usleep((unsigned int)((1 - (nTail / 5.0)) * 100000));
     }
 }
 
@@ -152,7 +152,7 @@ int main() {
         Draw();
         Input();
         Logic();
-        usleep(100000); // Cambia este valor para ajustar la velocidad general del juego
+        usleep(100000);
     }
 
     endwin();
