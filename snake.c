@@ -76,16 +76,16 @@ void Input() {
     int ch = getch();
     if (ch != ERR) {
         switch (ch) {
-        case 'a':
+        case KEY_LEFT:
             dir = LEFT;
             break;
-        case 'd':
+        case KEY_RIGHT:
             dir = RIGHT;
             break;
-        case 'w':
+        case KEY_UP:
             dir = UP;
             break;
-        case 's':
+        case KEY_DOWN:
             dir = DOWN;
             break;
         case 'x':
