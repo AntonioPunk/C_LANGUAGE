@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <errno.h>
 #include <ncurses.h>
 
 #define WIDTH 20
@@ -21,6 +22,11 @@ enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN };
 enum eDirection dir;
 
 void SleepMicroseconds(int microseconds);
+void UpdateTail();
+void MoveHead();
+void WrapPosition();
+int CheckSelfCollision();
+void HandleFruitConsumption();
 
 int IsCellOccupied(int cellX, int cellY) {
     if (x == cellX && y == cellY) {
@@ -138,23 +144,27 @@ void Input() {
     }
 }
 
-void Logic() {
-    if (nTail > 0) {
-        int prevX = tailX[0];
-        int prevY = tailY[0];
-        int prev2X, prev2Y;
-
-        tailX[0] = x;
-        tailY[0] = y;
-        for (int i = 1; i < nTail; i++) {
-            prev2X = tailX[i];
-            prev2Y = tailY[i];
-            tailX[i] = prevX;
-            tailY[i] = prevY;
-            prevX = prev2X;
-            prevY = prev2Y;
-        }
+void UpdateTail() {
+    if (nTail <= 0) {
+        return;
     }
+
+    int prevX = tailX[0];
+    int prevY = tailY[0];
+    tailX[0] = x;
+    tailY[0] = y;
+
+    for (int i = 1; i < nTail; i++) {
+        int currentX = tailX[i];
+        int currentY = tailY[i];
+        tailX[i] = prevX;
+        tailY[i] = prevY;
+        prevX = currentX;
+        prevY = currentY;
+    }
+}
+
+void MoveHead() {
     switch (dir) {
     case LEFT:
         x--;
@@ -171,16 +181,24 @@ void Logic() {
     default:
         break;
     }
+}
 
+void WrapPosition() {
     if (x >= WIDTH) x = 0; else if (x < 0) x = WIDTH - 1;
     if (y >= HEIGHT) y = 0; else if (y < 0) y = HEIGHT - 1;
+}
 
-    for (int i = 0; i < nTail; i++)
+int CheckSelfCollision() {
+    for (int i = 0; i < nTail; i++) {
         if (tailX[i] == x && tailY[i] == y) {
-            gameOver = 1;
-            return;
+            return 1;
         }
+    }
 
+    return 0;
+}
+
+void HandleFruitConsumption() {
     if (x == fruitX && y == fruitY) {
         score += 10;
         if (nTail < MAX_TAIL) {
@@ -203,13 +221,26 @@ void Logic() {
     }
 }
 
+void Logic() {
+    UpdateTail();
+    MoveHead();
+    WrapPosition();
+
+    if (CheckSelfCollision()) {
+        gameOver = 1;
+        return;
+    }
+
+    HandleFruitConsumption();
+}
+
 int main() {
     Setup();
     while (!gameOver) {
         Draw();
-    Input();
-    Logic();
-    SleepMicroseconds(frameDelayUs);
+        Input();
+        Logic();
+        SleepMicroseconds(frameDelayUs);
     }
 
     nodelay(stdscr, FALSE);
@@ -222,8 +253,15 @@ int main() {
 }
 
 void SleepMicroseconds(int microseconds) {
-    struct timespec ts;
-    ts.tv_sec = microseconds / 1000000;
-    ts.tv_nsec = (microseconds % 1000000) * 1000;
-    nanosleep(&ts, NULL);
+    if (microseconds <= 0) {
+        return;
+    }
+
+    struct timespec remaining;
+    remaining.tv_sec = microseconds / 1000000;
+    remaining.tv_nsec = (microseconds % 1000000) * 1000;
+
+    while (nanosleep(&remaining, &remaining) == -1 && errno == EINTR) {
+        /* Reintenta con el tiempo restante si una señal interrumpe el sueño. */
+    }
 }
