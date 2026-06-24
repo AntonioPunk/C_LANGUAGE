@@ -1,3 +1,9 @@
+/*
+ * Simple Snake game implemented using ncurses.
+ * The game logic maintains the snake head, tail, fruit position, and score.
+ * The snake wraps around the board edges and grows when it eats fruit.
+ */
+
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdlib.h>
@@ -6,6 +12,7 @@
 #include <errno.h>
 #include <ncurses.h>
 
+/* Game board dimensions and timing constants. */
 #define WIDTH 20
 #define HEIGHT 20
 #define MAX_TAIL (WIDTH * HEIGHT - 1)
@@ -13,14 +20,20 @@
 #define MIN_DELAY_US 30000
 #define DELAY_STEP_US 2500
 
-int x, y, fruitX, fruitY, score;
-int tailX[MAX_TAIL], tailY[MAX_TAIL];
-int nTail;
-int gameOver;
-int frameDelayUs;
-enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN };
-enum eDirection dir;
+/* Global gameplay state. */
+int x, y;                    /* Snake head position. */
+int fruitX, fruitY;          /* Fruit position on the board. */
+int score;                   /* Player score. */
+int tailX[MAX_TAIL];         /* Tail segment x-coordinates. */
+int tailY[MAX_TAIL];         /* Tail segment y-coordinates. */
+int nTail;                   /* Current length of the tail. */
+int gameOver;                /* Game-over flag. */
+int frameDelayUs;            /* Delay between frames in microseconds. */
 
+enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN };
+enum eDirection dir;         /* Current snake direction. */
+
+/* Forward declarations for helper functions. */
 void SleepMicroseconds(int microseconds);
 void UpdateTail();
 void MoveHead();
@@ -28,6 +41,9 @@ void WrapPosition();
 int CheckSelfCollision();
 void HandleFruitConsumption();
 
+/*
+ * Returns 1 if the specified cell is occupied by the snake head or any tail segment.
+ */
 int IsCellOccupied(int cellX, int cellY) {
     if (x == cellX && y == cellY) {
         return 1;
@@ -42,6 +58,10 @@ int IsCellOccupied(int cellX, int cellY) {
     return 0;
 }
 
+/*
+ * Randomly places the fruit on an unoccupied board cell.
+ * If the board is full, the function returns without placing a new fruit.
+ */
 void PlaceFruit() {
     if (nTail + 1 >= WIDTH * HEIGHT) {
         return;
@@ -53,6 +73,9 @@ void PlaceFruit() {
     } while (IsCellOccupied(fruitX, fruitY));
 }
 
+/*
+ * Initializes ncurses and game state variables before the game loop starts.
+ */
 void Setup() {
     initscr();
     noecho();
@@ -73,6 +96,9 @@ void Setup() {
     PlaceFruit();
 }
 
+/*
+ * Draws the current game board, including borders, snake, fruit, and score.
+ */
 void Draw() {
     clear();
 
@@ -84,20 +110,21 @@ void Draw() {
         for (int j = 0; j < WIDTH; j++) {
             if (j == 0)
                 printw("#");
+
             if (i == y && j == x)
                 printw("O");
             else if (i == fruitY && j == fruitX)
                 printw("F");
             else {
-                int print = 0;
+                int printed = 0;
                 for (int k = 0; k < nTail; k++) {
                     if (tailX[k] == j && tailY[k] == i) {
                         printw("o");
-                        print = 1;
+                        printed = 1;
                         break;
                     }
                 }
-                if (!print)
+                if (!printed)
                     printw(" ");
             }
 
@@ -116,6 +143,10 @@ void Draw() {
     refresh();
 }
 
+/*
+ * Reads user input and updates the snake direction or game-over flag.
+ * Prevents reversing direction directly into the snake body.
+ */
 void Input() {
     int ch = getch();
     if (ch != ERR) {
@@ -144,6 +175,10 @@ void Input() {
     }
 }
 
+/*
+ * Shifts the tail segments so the first segment follows the head, and each
+ * subsequent segment follows the one in front of it.
+ */
 void UpdateTail() {
     if (nTail <= 0) {
         return;
@@ -164,6 +199,9 @@ void UpdateTail() {
     }
 }
 
+/*
+ * Moves the snake head one cell in the current direction.
+ */
 void MoveHead() {
     switch (dir) {
     case LEFT:
@@ -183,11 +221,17 @@ void MoveHead() {
     }
 }
 
+/*
+ * Wraps the snake around the board edges so it appears on the opposite side.
+ */
 void WrapPosition() {
     if (x >= WIDTH) x = 0; else if (x < 0) x = WIDTH - 1;
     if (y >= HEIGHT) y = 0; else if (y < 0) y = HEIGHT - 1;
 }
 
+/*
+ * Checks whether the snake head collided with any tail segment.
+ */
 int CheckSelfCollision() {
     for (int i = 0; i < nTail; i++) {
         if (tailX[i] == x && tailY[i] == y) {
@@ -198,6 +242,10 @@ int CheckSelfCollision() {
     return 0;
 }
 
+/*
+ * Handles fruit collection: increases score, grows the snake, accelerates the game,
+ * and places a new fruit. Ends the game if the board is full.
+ */
 void HandleFruitConsumption() {
     if (x == fruitX && y == fruitY) {
         score += 10;
@@ -221,6 +269,10 @@ void HandleFruitConsumption() {
     }
 }
 
+/*
+ * Executes a single game tick: update tail, move the head, wrap position,
+ * detect self-collision, and process fruit consumption.
+ */
 void Logic() {
     UpdateTail();
     MoveHead();
@@ -234,6 +286,9 @@ void Logic() {
     HandleFruitConsumption();
 }
 
+/*
+ * Main entry point. Initializes the game, runs the game loop, then cleans up ncurses.
+ */
 int main() {
     Setup();
     while (!gameOver) {
@@ -252,6 +307,10 @@ int main() {
     return 0;
 }
 
+/*
+ * Sleeps for the requested number of microseconds, retrying if nanosleep is
+ * interrupted by a signal.
+ */
 void SleepMicroseconds(int microseconds) {
     if (microseconds <= 0) {
         return;
@@ -262,6 +321,6 @@ void SleepMicroseconds(int microseconds) {
     remaining.tv_nsec = (microseconds % 1000000) * 1000;
 
     while (nanosleep(&remaining, &remaining) == -1 && errno == EINTR) {
-        /* Reintenta con el tiempo restante si una señal interrumpe el sueño. */
+        /* Retry with the remaining sleep time if interrupted. */
     }
 }
